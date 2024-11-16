@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from modules.app import App
+from gui.app import App
 
 
 # UI config

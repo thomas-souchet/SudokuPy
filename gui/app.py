@@ -1,4 +1,4 @@
-from modules.UI import *
+from gui.UI import *
 
 
 class App(ctk.CTk):

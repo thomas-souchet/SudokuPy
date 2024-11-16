@@ -1,10 +1,3 @@
-"""! @brief Defines the data structures used in the program."""
-##
-# @file data_structures.py
-#
-# @brief Defines the data structures used in the program.
-
-
 class Sudoku:
     """! The Sudoku base class.
     Defines the data structure used to store the Sudoku grid.

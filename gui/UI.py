@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from modules.data_structures import Sudoku
+from core.sudoku import Sudoku
 
 # -------------------
 # HEADER
