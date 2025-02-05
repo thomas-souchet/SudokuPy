@@ -1,7 +1,7 @@
 import sys
 import os
 import pytest
-from typing import Optional
+from typing import Optional, Tuple
 
 # Moves up a level from the test file
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -41,6 +41,43 @@ def test_evaluate_clause(clause: list[int], list_var: list[Optional[bool]], expe
     ([True, False, True, False], False),
 ])
 def test_evaluate(list_var: list[Optional[bool]], expected: Optional[bool]):
-    cnf = CNF([[1, 2], [2, -3, 4], [-1, -2], [-1, -2, -3], [1]], [None, None, None, None])
-    result = cnf.evaluate(list_var)
-    assert result is expected
+    cnf = CNF([[1, 2], [2, -3, 4], [-1, -2], [-1, -2, -3], [1]], list_var)
+    cnf.evaluate()
+    assert cnf.get_satisfiable() is expected
+
+
+@pytest.mark.parametrize("literal, expected, value", [
+    (4, [[-1, 2, 3], [-1, -2, -5], []], True),
+    (-5, [[-1, 2, 3, -4], [-3, 4], [-2, 3, 4], [-4]], False),
+])
+def test_remove_litt(literal: int, expected: list[list[int]], value: bool):
+    cnf = CNF([[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4]], [None] * 5)
+    cnf.remove_literal(literal)
+    assert cnf.get_actual_cnf() == expected
+    assert cnf.get_list_var()[abs(literal)-1] is value
+    assert cnf.get_history().__contains__((abs(literal)-1, value))
+
+
+@pytest.mark.parametrize("formula, list_var, expected", [
+    ([[-5, -3, 4, -1], [3], [5, -2], [-2, 1, -4], [1, -3]], [False, None, None, False, None], [[3], [5, -2], [-3]]),
+    ([[3, 2, 1], [-1, -2, 5]], [False, True, False, True, False], []),
+    ([[-5, -1], [-1, -3], [4], [-4, 1], [-2, -1, 3]], [None, None, None, True, None], [[-5, -1], [-1, -3], [1], [-2, -1, 3]])
+])
+def test_init(formula: list[list[int]], list_var: list[Optional[bool]], expected: list[list[int]]):
+    cnf = CNF(formula, list_var)
+    assert cnf.get_initial_cnf() == expected
+    assert cnf.get_actual_cnf() == expected
+    assert cnf.get_list_var() == list_var
+    assert cnf.get_history() == []
+
+
+@pytest.mark.parametrize("changes, expected", [
+    ([(0, True), (1, True), (2, False)], [[-5], [4, 5], [-4, 5]]),
+    ([(0, True), (1, True), (2, False), (3, True), (4, False)], [[]]),
+    ([(0, True), (1, True), (2, False), (3, False)], [[-5], [5]])
+])
+def test_restore_state(changes: list[Tuple[int, bool]], expected: list[list[int]]):
+    cnf = CNF([[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]], [None] * 5)
+    cnf.restore_state(changes)
+    assert cnf.get_actual_cnf() == expected
+    assert cnf.get_history() == changes
