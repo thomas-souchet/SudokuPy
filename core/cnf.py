@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional, Tuple
 
 
@@ -12,10 +13,10 @@ class CNF:
         @param list_var  An 1-dimensional array containing all the value of the variables that are in the CNF.
         @return  An instance of the CNF class initialized with the specified formula.
         """
-        self.__initial_formula =formula
-        self.__actual_formula = formula
-        self.__initial_var = list_var
-        self.__list_var = list_var
+        self.__initial_formula = deepcopy(formula)
+        self.__actual_formula = deepcopy(formula)
+        self.__initial_var = list_var[:]
+        self.__list_var = list_var[:]
         self.__history = []
         self.__satisfiable = None
         # Simplify the initial formula with the known variables
@@ -26,8 +27,8 @@ class CNF:
             elif self.__list_var[cons_index] is False:
                 self.remove_literal(-(cons_index + 1))
         # Reset the history of the changes made by remove_literal because it's the initial state
-        self.__initial_formula = self.__actual_formula
-        self.__list_var = self.__initial_var
+        self.__initial_formula = deepcopy(self.__actual_formula)
+        self.__list_var = list_var[:]
         self.__history = []
 
     def get_initial_cnf(self) -> list[list[int]]:
@@ -146,8 +147,9 @@ class CNF:
         """! Restore the CNF to a given state using the given history.
         @param history  The history of changes made to the CNF.
         """
-        self.__actual_formula = self.__initial_formula
-        self.__list_var = self.__initial_var
+        self.__actual_formula = deepcopy(self.__initial_formula)
+        self.__list_var = self.__initial_var[:]
+        self.__history = []
         for change in history:
             lit = change[0] + 1
             for clause in self.__actual_formula:

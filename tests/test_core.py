@@ -1,12 +1,18 @@
 import sys
 import os
 import pytest
+from copy import deepcopy
 from typing import Optional, Tuple
 
 # Moves up a level from the test file
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.cnf import CNF
+from core.dpll import DPLL
+
+# ---------
+# Test CNF
+# ---------
 
 
 @pytest.mark.parametrize("variable, assignment, expected", [
@@ -81,3 +87,53 @@ def test_restore_state(changes: list[Tuple[int, bool]], expected: list[list[int]
     cnf.restore_state(changes)
     assert cnf.get_actual_cnf() == expected
     assert cnf.get_history() == changes
+    assert cnf.get_initial_cnf() == [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]]
+
+
+# ---------
+# Test DPLL
+# ---------
+
+
+@pytest.mark.parametrize("formula, variables, history, simplifications, oracle_formula, oracle_vars, oracle_history, oracle_simpl", [
+    (
+        [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [True, True, False, True, False],
+        [[0, True], [1, True], [2, False], [4, False], [3, True]],
+        [4, 3],
+        [[3, -4], [-3, 4, 5], [-4, 5]],
+        [True, False, None, None, None],
+        [(0, True), (1, False)],
+        []
+    ),
+    (
+        [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [True, True, True, True, False],
+        [[0, True], [1, True], [2, True], [3, True], [4, False]],
+        [],
+        [[-5], [5]],
+        [True, True, True, False, None],
+        [(0, True), (1, True), (2, True), (3, False)],
+        []
+    ),
+    (
+        [[3, 1], [1], [-2, 3, -5], [-1, 3], [-4, -3, -2]],
+        [True, None, False, None, True],
+        [[0, True]],
+        [0],
+        [[3, 1], [1], [-2, 3, -5], [-1, 3], [-4, -3, -2]],
+        [None, None, None, None, None],
+        [],
+        []
+    )
+])
+def test_back(formula, variables, history: list[Tuple[int, bool]], simplifications, oracle_formula, oracle_vars, oracle_history: list[Tuple[int, bool]], oracle_simpl):
+    dpll = DPLL(CNF(deepcopy(formula), [None] * len(variables)))
+    dpll._DPLL__list_simplifications = simplifications[:]
+    dpll._DPLL__formula.restore_state(history)
+    dpll._DPLL__back()
+    res_cnf = dpll._DPLL__formula
+    assert res_cnf.get_actual_cnf() == oracle_formula
+    assert res_cnf.get_list_var() == oracle_vars
+    assert res_cnf.get_history() == oracle_history
+    assert dpll._DPLL__list_simplifications == oracle_simpl
