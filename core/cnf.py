@@ -31,6 +31,24 @@ class CNF:
         self.__list_var = list_var[:]
         self.__history = []
 
+    def set_state(self,
+                  initial_formula: list[list[int]] = None,
+                  actual_formula: list[list[int]] = None,
+                  list_var: list[Optional[bool]] = None,
+                  initial_var: list[Optional[bool]] = None,
+                  history: list[Tuple[int, bool]] = None):
+        """! Set the state of the CNF. (Used for testing)"""
+        if initial_formula:
+            self.__initial_formula = deepcopy(initial_formula)
+        if actual_formula:
+            self.__actual_formula = deepcopy(actual_formula)
+        if list_var:
+            self.__list_var = deepcopy(list_var)
+        if initial_var:
+            self.__initial_var = deepcopy(initial_var)
+        if history:
+            self.__history = deepcopy(history)
+
     def get_initial_cnf(self) -> list[list[int]]:
         """! Get the Initial CNF formula.
         @return  A CNF formula.

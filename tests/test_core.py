@@ -183,9 +183,7 @@ def test_back(formula, variables, history: list[Tuple[int, bool]], simplificatio
 ])
 def test_progress(formula, variables, history: list[Tuple[int, bool]], simplifications, oracle_formula, oracle_vars, oracle_history: list[Tuple[int, bool]], oracle_simpl):
     dpll = DPLL(CNF(deepcopy(formula), [None] * len(variables)))
-    dpll._DPLL__formula._CNF__initial_var = variables[:]
-    dpll._DPLL__formula._CNF__list_var = variables[:]
-    dpll._DPLL__formula._CNF__history = deepcopy(history)
+    dpll._DPLL__formula.set_state(None, None, variables, variables, history)
     dpll._DPLL__list_simplifications = simplifications[:]
     dpll._DPLL__progress()
     res_cnf = dpll._DPLL__formula
@@ -193,3 +191,50 @@ def test_progress(formula, variables, history: list[Tuple[int, bool]], simplific
     assert res_cnf.get_list_var() == oracle_vars
     assert res_cnf.get_history() == oracle_history
     assert dpll._DPLL__list_simplifications == oracle_simpl
+
+
+@pytest.mark.parametrize("formula_init, formula_actual, variables, history, simplifications, oracle_res, oracle_vars", [
+    (
+        [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [[2, 3, -4], [-2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [True, None, None, None, None],
+        [(0, True)],
+        [],
+        True,
+        [True, False, True, True, True]
+    ),
+    (
+        [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [[3, -4]],
+        [True, False, None, None, True],
+        [(0, True), (1, False), (4, True)],
+        [4],
+        True,
+        [True, False, True, None, True]
+    ),
+    (
+        [[-5, 2, -3, -4], [1, -5], [5, 2], [3, -2, 4], [5, -2, -1]],
+        [[2], [-2, 4]],
+        [False, None, False, None, False],
+        [(4, False)],
+        [4],
+        True,
+        [False, True, False, True, False]
+    ),
+    (
+        [[5], [3, -5, -1, -2], [1, -2, -5], [2, -5, 1, -3], [3]],
+        [[-2], [2, -3], [3]],
+        [False, None, None, False, True],
+        [(4, True)],
+        [4],
+        False,
+        [False, None, None, False, True]
+    ),
+])
+def test_solve(formula_init, formula_actual, variables, history, simplifications, oracle_res, oracle_vars):
+    dpll = DPLL(CNF(deepcopy(formula_init), [None] * len(variables)))
+    dpll._DPLL__formula.set_state(formula_init, formula_actual, variables, variables, history)
+    dpll._DPLL__list_simplifications = simplifications[:]
+    res = dpll.solve()
+    assert res == oracle_res
+    assert dpll._DPLL__formula.get_list_var() == oracle_vars

@@ -16,7 +16,7 @@ class DPLL:
         self.__formula: CNF = base_formula
         self.__list_simplifications: list[int] = []
 
-    def __solve(self) -> bool:
+    def solve(self) -> bool:
         """! Find recursively if a CNF formula is satisfiable or not using DPLL algorithm.
         @return  Boolean indicating if the CNF formula is satisfiable or not.
         """
@@ -30,9 +30,9 @@ class DPLL:
                 return False
             # First progression
             self.__progress()
-            return self.__solve()
+            return self.solve()
         # Progress in the tree path
-        old_history = self.__formula.get_history()
+        old_history = deepcopy(self.__formula.get_history())
         self.__progress()
         # If no changes made go back
         if old_history == self.__formula.get_history():
@@ -41,7 +41,7 @@ class DPLL:
         if not self.__formula.get_history():
             return False
         # Recursive to try solving the formula with the changes made
-        return self.__solve()
+        return self.solve()
 
     def __progress(self):
         """! Progress in the tree to make either a simplification following DPLL rules or assign a variable to True."""
