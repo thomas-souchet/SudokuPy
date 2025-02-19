@@ -137,3 +137,59 @@ def test_back(formula, variables, history: list[Tuple[int, bool]], simplificatio
     assert res_cnf.get_list_var() == oracle_vars
     assert res_cnf.get_history() == oracle_history
     assert dpll._DPLL__list_simplifications == oracle_simpl
+
+
+@pytest.mark.parametrize("formula, variables, history, simplifications, oracle_formula, oracle_vars, oracle_history, oracle_simpl", [
+    (
+        [[-5], [4, 5], [-4, 5]],
+        [True, True, False, None, None],
+        [(0, True), (1, True), (2, False)],
+        [],
+        [[4], [-4]],
+        [True, True, False, None, False],
+        [(0, True), (1, True), (2, False), (4, False)],
+        [4]
+    ),
+    (
+        [[-5, 4], [2, 4, 5], [-2, 5]],
+        [True, None, None, None, None],
+        [(0, True)],
+        [0],
+        [[-2, 5]],
+        [True, None, None, True, None],
+        [(0, True), (3, True)],
+        [0, 3]
+    ),
+    (
+        [[1, 2, 4, -5], [-1, 2, 3, -4], [-1, -2, -5], [-3, 4, 5], [-2, 3, 4, 5], [-4, 5]],
+        [None, None, None, None, None],
+        [],
+        [],
+        [[-1, 2, 3], [-1, -2, -5], [5]],
+        [None, None, None, True, None],
+        [(3, True)],
+        []
+    ),
+    (
+        [[4, 5], [-4, 5]],
+        [True, False, True, None, None],
+        [(0, True), (1, False), (2, True)],
+        [],
+        [],
+        [True, False, True, None, True],
+        [(0, True), (1, False), (2, True), (4, True)],
+        [4]
+    )
+])
+def test_progress(formula, variables, history: list[Tuple[int, bool]], simplifications, oracle_formula, oracle_vars, oracle_history: list[Tuple[int, bool]], oracle_simpl):
+    dpll = DPLL(CNF(deepcopy(formula), [None] * len(variables)))
+    dpll._DPLL__formula._CNF__initial_var = variables[:]
+    dpll._DPLL__formula._CNF__list_var = variables[:]
+    dpll._DPLL__formula._CNF__history = deepcopy(history)
+    dpll._DPLL__list_simplifications = simplifications[:]
+    dpll._DPLL__progress()
+    res_cnf = dpll._DPLL__formula
+    assert res_cnf.get_actual_cnf() == oracle_formula
+    assert res_cnf.get_list_var() == oracle_vars
+    assert res_cnf.get_history() == oracle_history
+    assert dpll._DPLL__list_simplifications == oracle_simpl

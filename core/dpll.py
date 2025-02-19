@@ -45,7 +45,59 @@ class DPLL:
 
     def __progress(self):
         """! Progress in the tree to make either a simplification following DPLL rules or assign a variable to True."""
-        pass
+        # Exit if elements are empty
+        if not self.__formula.get_list_var() or not self.__formula.get_actual_cnf():
+            return
+
+        # Find DPLL simplification
+        dpll_litt = -1
+        dpll_simpl = False
+        literals = []
+
+        # Var which will be set if there is no DPLL simplifications
+        editable_vars = []
+        for v_index in range(len(self.__formula.get_list_var())):
+            if self.__formula.get_list_var()[v_index] is None:
+                editable_vars.append({"v_index": v_index, "occurrences": 0})
+
+        for cl in self.__formula.get_actual_cnf():
+            # Find unitary clause
+            if len(cl) == 1:
+                dpll_litt = cl[0]
+                dpll_simpl = True
+                break
+            # Find out if there is a pure literal
+            for litt in cl:
+                add = True
+                for el in literals:
+                    if litt == el[0]:
+                        add = False
+                        break
+                    elif litt == -el[0]:
+                        add = False
+                        el[1] = False
+                        break
+                if add:
+                    literals.append([litt, True])
+            for ev_index in range(len(editable_vars)):
+                editable_vars[ev_index]["occurrences"] += cl.count(editable_vars[ev_index]["v_index"]+1)
+                editable_vars[ev_index]["occurrences"] += cl.count(-editable_vars[ev_index]["v_index"]+1)
+        # Check whether a pure literal has been found if there is no unitary clause
+        if dpll_simpl is False:
+            for el in literals:
+                if el[1]:
+                    dpll_litt = el[0]
+                    dpll_simpl = True
+                    break
+        # DPLL Simplification
+        if dpll_simpl:
+            self.__formula.remove_literal(dpll_litt)
+            self.__list_simplifications.append(abs(dpll_litt)-1)
+            return
+        # If there is no simplification progress in the tree
+        if len(editable_vars) > 0:
+            choice = max(editable_vars, key=lambda x: x['occurrences'])
+            self.__formula.remove_literal(choice['v_index']+1)
 
     def __back(self):
         """! Go back in the tree to change the assignation of a variable to False. (Backtracking)"""
