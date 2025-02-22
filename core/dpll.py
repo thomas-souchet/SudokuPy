@@ -16,6 +16,12 @@ class DPLL:
         self.__formula: CNF = base_formula
         self.__list_simplifications: list[int] = []
 
+    def get_cnf(self) -> CNF:
+        """! Get the actual CNF formula
+        @return  The actual CNF formula.
+        """
+        return self.__formula
+
     def solve(self) -> bool:
         """! Find recursively if a CNF formula is satisfiable or not using DPLL algorithm.
         @return  Boolean indicating if the CNF formula is satisfiable or not.
