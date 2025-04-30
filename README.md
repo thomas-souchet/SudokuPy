@@ -1,6 +1,6 @@
 # SudokuPy
 
-> :construction: **This project is currently under development, so there may be bugs, and for the moment it is not functional.**
+> :construction: **This project is currently under development, so there may be bugs.**
 
 SudokuPy is a program that solves Sudoku grids using a [DPLL algorithm](https://en.wikipedia.org/wiki/DPLL_algorithm) with propositional logic formulas.
 
@@ -13,10 +13,10 @@ Clone the repository.
 git clone https://github.com/thomas-souchet/SudokuPy.git
 ```
 
-You need to install the [customtkinter package](https://pypi.org/project/customtkinter/0.3/).
+You need to install the dependencies.
 
 ```
-pip install customtkinter
+pip install -r requirements.txt
 ```
 
 Run the project.
