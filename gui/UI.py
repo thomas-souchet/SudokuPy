@@ -103,14 +103,15 @@ class SudokuGrid(ctk.CTkFrame):
             return False
         return text in valid_characters
 
-    def get_grid(self):
+    def get_grid(self) -> Sudoku:
         grid_value = Sudoku(self.n)
         for e in self.__entries:
             v = e[2].get()
-            grid_value.add((e[0], e[1], int(v) if v != '' else -1))
-        return grid_value.get()
+            if v != '':
+                grid_value.add((e[0], e[1], int(v)))
+        return grid_value
 
-    def set_grid(self, grid):
+    def set_grid(self, grid: Sudoku):
         if type(grid) is not Sudoku:
             raise TypeError('grid must be of type Sudoku')
         if grid.size != self.n**2:

@@ -1,4 +1,6 @@
 from gui.UI import *
+import math
+import time
 
 
 class App(ctk.CTk):
@@ -22,7 +24,7 @@ class App(ctk.CTk):
         self.sudoku_grid = SudokuGrid(self, 3, 400)
         self.sudoku_grid.grid(row=1, column=1)
 
-        self.sidebar = Sidebar(self, self.sudoku_grid.clear_grid, self.change_grid_size, self.set_grid_test)
+        self.sidebar = Sidebar(self, self.sudoku_grid.clear_grid, self.change_grid_size, self.solve_grid)
         self.sidebar.grid(row=1, column=0, sticky="nsew")
 
     def change_grid_size(self, value):
@@ -30,11 +32,6 @@ class App(ctk.CTk):
         self.sudoku_grid = SudokuGrid(self, int(value[0]), 400)
         self.sudoku_grid.grid(row=1, column=1)
         self.sidebar.update_clear_command(self.sudoku_grid.clear_grid)
-
-    def start_solving(self):
-        print(self.sudoku_grid.get_grid())
-        self.sidebar.update_time(999)
-        print("Start solving sudoku")
 
     def set_grid_test(self):
         try:
@@ -46,6 +43,15 @@ class App(ctk.CTk):
             print(self.sudoku_grid.get_grid())
         except Exception as e:
             self.error_win = ErrorWindow(message=repr(e))
+
+    def solve_grid(self):
+        print(">>> Start solving sudoku...")
+        start = time.time()
+        s = self.sudoku_grid.get_grid()
+        s.solve()
+        self.sudoku_grid.set_grid(s)
+        end = time.time()
+        self.sidebar.update_time(round(end - start, 2))
 
 
 class ErrorWindow(ctk.CTkToplevel):

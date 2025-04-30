@@ -171,5 +171,5 @@ class Sudoku:
         if not solvable:
             return False
         self.__set_grid_from_var(dpll.get_cnf().get_list_var())
-        print(self.__grid)
+        print(">>> Solved grid : ", self.__grid)
         return True
